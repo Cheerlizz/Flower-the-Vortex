@@ -19,7 +19,7 @@ const opts = {
   Width: 1700,
   Height: 1700,
   Iterations: 3,
-  Length: 800,
+  Length: 400,
   Step: 180,
   Factor1: 0.85,
   Factor2: 0.8,
@@ -29,7 +29,7 @@ const opts = {
   rule1a: 'G',
   //rule1b: 'G[+F]G[-F]S',
   rule1b: 'G[+F-]G[-F++]S',
-  Background: [248,244,234],
+  Background: [10,20,14],
   //Flower: [242, 115, 230],
   Flower: [57, 181, 224],
   
@@ -57,11 +57,11 @@ window.onload = function() {
   let gui = new dat.GUI({width:300});
 
   let img = gui.addFolder('Image Settings');
-  img.add(opts, 'Width', 300, 1400).step(1).onChange(setup);
-  img.add(opts, 'Height', 300, 1400).step(1).onChange(setup);
+  img.add(opts, 'Width', 300, 1400).step(1).onChange(randomize);
+  img.add(opts, 'Height', 300, 1400).step(1).onChange(randomize);
   
   let gen = gui.addFolder('Generation Settings')
-  gen.add(opts, 'Iterations', 1, 10).step(1).onChange(setup);
+  gen.add(opts, 'Iterations', 1, 10).step(1).onChange(randomize);
   gen.add(opts, 'Length').onChange(updateRules);
   gen.add(opts, 'Step').onChange(updateRules);
   gen.add(opts, 'rule0a').onChange(updateRules);
@@ -86,6 +86,103 @@ window.onload = function() {
  
 };
 
+function updateVal(propertyName, slider) {
+  opts[propertyName] = slider.value();
+}
+
+function updateClr(propertyName, colorPicker) {
+  var rgbValues = colorPicker.color().levels;
+  opts[propertyName] = rgbValues;
+}
+
+
+
+
+function addGUI()
+{
+  // Add BGcolor picker
+  var label = createElement("label", "Background");
+  var colorPicker = createColorPicker(color(57, 181, 224));
+  colorPicker.addClass("color-picker");
+  makeContainer(label,colorPicker);
+  colorPicker.input(updateClr.bind(null, "Background",colorPicker));
+
+// Add FLRcolor picker
+  var label = createElement("label", "Flower");
+  var colorPicker = createColorPicker(color(57, 181, 224));
+  colorPicker.addClass("color-picker");
+  makeContainer(label,colorPicker);
+  colorPicker.input(updateClr.bind(null, "Flower",colorPicker));
+
+  
+  var sliderNames = ["Red_Drift", "Green_Drift", "Blue_Drift"];
+  for (var i = 0; i < sliderNames.length; i++) {
+    // Create a label for the slider
+    var label = createElement("label", sliderNames[i]);
+
+    // Create the slider
+    var slider = createSlider(0, 255, 100);
+    slider.addClass("slider");
+
+    // // Add the label and slider to the parent GUI HTML element
+    // var guiContainer = select("#gui-container");
+    // label.parent(guiContainer);
+    // slider.parent(guiContainer);
+
+    makeContainer(label,slider);
+
+    // Assign event listener to update opts object on slider change
+    slider.input(updateVal.bind(null, sliderNames[i], slider));
+  }
+
+  //step
+  var label = createElement("label", "Step");
+  label.addClass("slider-label");
+  var slider = createSlider(0, 500, 180);
+  slider.addClass("slider");
+  // Add the label and slider to the parent GUI HTML element
+  var guiContainer = select("#gui-container");
+  label.parent(guiContainer);
+  slider.parent(guiContainer);
+  // Assign event listener to update opts object on slider change
+  slider.input(updateVal.bind(null, "Step", slider));
+
+  //length
+  var label = createElement("label", "Length");
+  label.addClass("slider-label");
+  var slider = createSlider(0, 500, 180);
+  slider.addClass("slider");
+  // Add the label and slider to the parent GUI HTML element
+  var guiContainer = select("#gui-container");
+  label.parent(guiContainer);
+  slider.parent(guiContainer);
+  // Assign event listener to update opts object on slider change
+  slider.input(updateVal.bind(null, "Length", slider));
+
+
+
+  //add a button
+  button = createButton("generate");
+  button.addClass("button");
+  //Add the slider to the parent gui HTML element
+  button.parent("gui-container");
+  button.mousePressed(randomize);
+}
+
+function makeContainer(label,changeVal){
+    label.addClass("slider-label");
+    
+    // Create a container div for the label and color picker
+    var container = createDiv();
+    container.addClass("input-container");
+    // Add the label and flower color picker to the container
+    label.parent(container);
+    changeVal.parent(container);
+    // Add the container to the parent GUI HTML element
+    var guiContainer = select("#gui-container");
+    container.parent(guiContainer);
+}
+
 //Set the first generation of sentence
 let axiom = "F";
 let sentence = axiom;
@@ -107,7 +204,17 @@ function randomize() {
   randomSeed(random(10000));
   // Update the L-system rules each time pressing generate
   updateRules();
-  setup();
+  //createFlower();
+  pixelDensity(2);
+  
+  rad=opts.Length;
+  move=opts.Step;
+  alp=opts.Opacity;
+  
+  background(opts.Background[0],opts.Background[1],opts.Background[2]);
+  randomSeed(random(10000));
+  sentence = axiom;
+  createFlower();
 }
 
 function save() {
@@ -127,6 +234,14 @@ function updateRules() {
   };
   
   
+}
+
+
+function createFlower() {
+  
+  for (var i = 0; i < int(opts.Iterations); i++) {
+    generate(i);
+  }
 }
 
 function generate(iter) {
@@ -154,7 +269,7 @@ function generate(iter) {
     }
   }
   sentence = nextSentence;
-  createP(sentence);
+  //createP(sentence);
   flower(iter);
 }
 
@@ -279,30 +394,33 @@ function drawAshape(rad,radShaft,alp) {
 function setup()
 {
  
-  let width = opts.Width;
-  let height = opts.Height;
+  canvas = createCanvas(windowWidth, windowHeight);
+  canvas.parent("sketch-container"); //move our canvas inside this HTML element
 
-
-  createCanvas(width, height);
+  addGUI();
+  // let width = opts.Width;
+  // let height = opts.Height;
+  //createCanvas(width, height);
 
   pixelDensity(2);
-  
   
   rad=opts.Length;
   move=opts.Step;
   alp=opts.Opacity;
   
-
   background(opts.Background[0],opts.Background[1],opts.Background[2]);
-  
+  randomSeed(random(10000));
   sentence = axiom;
   createFlower();
+  
   
 }
 
 
-function createFlower() {
-  for (var i = 0; i < int(opts.Iterations); i++) {
-    generate(i);
-  }
+
+
+function windowResized() {
+
+  resizeCanvas(windowWidth, windowHeight);
+
 }
