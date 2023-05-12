@@ -19,10 +19,10 @@ const opts = {
   Width: 1700,
   Height: 1700,
   Iterations: 3,
-  Length: 400,
-  Step: 180,
-  Factor1: 0.85,
-  Factor2: 0.8,
+  Scale: 300,
+  Centrifugal: 180,
+  Factor1: 45,
+  Factor2: 60,
   rule0a: 'F',
   //rule0b: 'Go[-F]S[+G+F][+F]S[-G-F]',
   rule0b: 'Go[-F-]S[+G+F][+F-]S[+G+F]',
@@ -53,38 +53,7 @@ let alp;
 let move;
 let clr = [];
 
-window.onload = function() {
-  let gui = new dat.GUI({width:300});
 
-  let img = gui.addFolder('Image Settings');
-  img.add(opts, 'Width', 300, 1400).step(1).onChange(randomize);
-  img.add(opts, 'Height', 300, 1400).step(1).onChange(randomize);
-  
-  let gen = gui.addFolder('Generation Settings')
-  gen.add(opts, 'Iterations', 1, 10).step(1).onChange(randomize);
-  gen.add(opts, 'Length').onChange(updateRules);
-  gen.add(opts, 'Step').onChange(updateRules);
-  gen.add(opts, 'rule0a').onChange(updateRules);
-  gen.add(opts, 'rule0b').onChange(updateRules);
-  gen.add(opts, 'rule1a').onChange(updateRules);
-  gen.add(opts, 'rule1b').onChange(updateRules);
-
-  let col = gui.addFolder("Color Settings");
-  col.addColor(opts, 'Background');
-  col.addColor(opts, 'Flower');
-  col.add(opts, 'Red_Drift');
-  col.add(opts, 'Green_Drift');
-  col.add(opts, 'Blue_Drift');
-  
-  col.add(opts, 'Factor1', 0, 1).step(0.01);
-  col.add(opts, 'Factor2', 0, 1).step(0.01);
-  
-  col.add(opts, 'Opacity', 0, 255).step(1);
-  col.add(opts, 'Opacity_Drift').step(1);
-  gui.add(opts, 'Generate');
-  gui.add(opts, 'Save');
- 
-};
 
 function updateVal(propertyName, slider) {
   opts[propertyName] = slider.value();
@@ -115,7 +84,7 @@ function addGUI()
   colorPicker.input(updateClr.bind(null, "Flower",colorPicker));
 
   
-  var sliderNames = ["Red_Drift", "Green_Drift", "Blue_Drift"];
+  var sliderNames = ["Red_Drift", "Green_Drift", "Blue_Drift","Opacity"];
   for (var i = 0; i < sliderNames.length; i++) {
     // Create a label for the slider
     var label = createElement("label", sliderNames[i]);
@@ -124,49 +93,102 @@ function addGUI()
     var slider = createSlider(0, 255, 100);
     slider.addClass("slider");
 
-    // // Add the label and slider to the parent GUI HTML element
-    // var guiContainer = select("#gui-container");
-    // label.parent(guiContainer);
-    // slider.parent(guiContainer);
-
     makeContainer(label,slider);
 
     // Assign event listener to update opts object on slider change
     slider.input(updateVal.bind(null, sliderNames[i], slider));
   }
 
-  //step
-  var label = createElement("label", "Step");
-  label.addClass("slider-label");
-  var slider = createSlider(0, 500, 180);
+  var label = createElement("label", "Opacity_Drift");
+  var slider = createSlider(0, 100, 40);
   slider.addClass("slider");
-  // Add the label and slider to the parent GUI HTML element
-  var guiContainer = select("#gui-container");
-  label.parent(guiContainer);
-  slider.parent(guiContainer);
-  // Assign event listener to update opts object on slider change
-  slider.input(updateVal.bind(null, "Step", slider));
+  makeContainer(label,slider);
+  slider.input(updateVal.bind(null, "Opacity_Drift", slider));
 
-  //length
-  var label = createElement("label", "Length");
-  label.addClass("slider-label");
+  //Centrifugal
+  var label = createElement("label", "Centrifugal");
   var slider = createSlider(0, 500, 180);
   slider.addClass("slider");
-  // Add the label and slider to the parent GUI HTML element
-  var guiContainer = select("#gui-container");
-  label.parent(guiContainer);
-  slider.parent(guiContainer);
-  // Assign event listener to update opts object on slider change
-  slider.input(updateVal.bind(null, "Length", slider));
+  makeContainer(label,slider);
+  slider.input(updateVal.bind(null, "Centrifugal", slider));
+
+  //Scale
+  var label = createElement("label", "Scale");
+  var slider = createSlider(0, 400, 180);
+  slider.addClass("slider");
+  makeContainer(label,slider);
+  slider.input(updateVal.bind(null, "Scale", slider));
+
+  var sliderFactors = ["Factor1", "Factor2"];
+  var precision = 0.01;
+  var sliderMin = 0.00;
+  var sliderMax = 100;
+  for (var i = 0; i < sliderFactors.length; i++) {
+    
+    // Create a label for the slider
+    var label = createElement("label", sliderFactors[i]);
+
+    // Create the slider
+    var slider = createSlider(0,  sliderMax , 50);
+    slider.addClass("slider");
+
+    makeContainer(label,slider);
+    // Assign event listener to update opts object on slider change
+    slider.input(updateVal.bind(null, sliderFactors[i], slider));
+
+  }
+
 
 
 
   //add a button
-  button = createButton("generate");
+  button = createButton("Generate");
   button.addClass("button");
   //Add the slider to the parent gui HTML element
   button.parent("gui-container");
   button.mousePressed(randomize);
+
+  //add a button
+  button = createButton("Magic");
+  button.addClass("button");
+  //Add the slider to the parent gui HTML element
+  button.parent("gui-container");
+  button.mousePressed(randomPick);
+
+  //add a button
+  button = createButton("Save");
+  button.addClass("button");
+  //Add the slider to the parent gui HTML element
+  button.parent("gui-container");
+  button.mousePressed(save);
+
+// Create a note element
+var note = createElement("p", "Generate: Get similar patterns with the setting parameters.");
+note.addClass("note");
+// Add the note to the parent GUI HTML element
+note.parent("gui-container");
+
+// Create a note element
+var note = createElement("p", "Magic: Only happens once, remember to save it!");
+note.addClass("note");
+// Add the note to the parent GUI HTML element
+note.parent("gui-container");
+  
+}
+
+function randomPick(){
+  opts["Red_Drift"] = random(255);
+  opts["Green_Drift"] = random(255);
+  opts["Blue_Drift"] = random(255);
+  opts["Opacity"] = random(50,255);
+  opts["Centrifugal"] = random(450);
+  opts["Scale"] = random(150,400);
+  opts["Factor1"] = random(100);
+  opts["Factor2"] = random(100);
+
+
+  randomize();
+
 }
 
 function makeContainer(label,changeVal){
@@ -207,8 +229,8 @@ function randomize() {
   //createFlower();
   pixelDensity(2);
   
-  rad=opts.Length;
-  move=opts.Step;
+  rad=opts.Scale;
+  move=opts.Centrifugal;
   alp=opts.Opacity;
   
   background(opts.Background[0],opts.Background[1],opts.Background[2]);
@@ -218,7 +240,11 @@ function randomize() {
 }
 
 function save() {
-  save('image.png');
+  // Draw the main canvas onto the hidden canvas
+  hiddenCanvas.image(canvas, 0, 0);
+
+  // Save the hidden canvas as an image
+  hiddenCanvas.save('image.png');
 }
 
 
@@ -291,8 +317,8 @@ function flower(iter) {
     if (current == 'F' || current == 'G') {
       drawAshape(rad,radShaft,alp) ;
       //morph the shape after drawing
-      rad*=opts.Factor1;
-      radShaft*=opts.Factor2;
+      rad*=opts.Factor1*0.01;
+      radShaft*=opts.Factor2*0.01;
     } else if (current == '+') {
       //Reduce transparency 
       alp+= random(opts.Opacity_Drift);
@@ -396,7 +422,8 @@ function setup()
  
   canvas = createCanvas(windowWidth, windowHeight);
   canvas.parent("sketch-container"); //move our canvas inside this HTML element
-
+// Create the hidden canvas
+hiddenCanvas = createGraphics(width, height);
   addGUI();
   // let width = opts.Width;
   // let height = opts.Height;
@@ -404,8 +431,8 @@ function setup()
 
   pixelDensity(2);
   
-  rad=opts.Length;
-  move=opts.Step;
+  rad=opts.Scale;
+  move=opts.Centrifugal;
   alp=opts.Opacity;
   
   background(opts.Background[0],opts.Background[1],opts.Background[2]);
@@ -421,6 +448,6 @@ function setup()
 
 function windowResized() {
 
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(windowWidth, windowHeight, true);
 
 }

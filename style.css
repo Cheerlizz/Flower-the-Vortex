@@ -18,7 +18,7 @@ canvas {
   border-radius: 10px;
   margin: 10px 0;
   box-sizing: border-box;
-  background-color: rgb(255,255,255,0.7);
+  background-color: rgba(226, 255, 216, 0.5);
   display: flex;
   /* align-items: center; */
   flex-direction: column;
@@ -33,30 +33,40 @@ canvas {
 }
 
 .color-picker {
+  border: none;
   margin-left: auto;
   padding: 0;
-  border: none;
   background: none;
   width: 40px;
   height: 20px;
 }
+.note {
+  font-size: 12px;
+  color: #eae2e2;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-family: "system-ui", sans-serif;
+}
 
 .button{
-  background-color: #371bd3;
-  border: solid 1px #371bd3;
+  background-color: rgba(0, 3, 1, 0.3);
+  border: none;
   border-radius: 10px;
-  color: white;
-  padding: 15px 20px;
+  color: rgb(230, 231, 241);
+  padding: 8px 10px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
-  min-width: 200px;
+  font-size: 14px;
+  min-width: 100px;
   cursor: pointer;
+  margin-bottom: 10px;
+  font-family: "system-ui", sans-serif;
 }
 .button:hover{
-  background-color:white;
-  color: #371bd3;
+  background-color:rgb(26, 23, 23);
+  color: #f2f6ef;
+  font-family: "system-ui", sans-serif;
 }
 
 /*styled slider */
@@ -66,7 +76,7 @@ canvas {
   width: 50%;
   height: 6px;
   border-radius: 5px;  
-  background: #1bff6f;
+  background: rgba(0, 3, 1, 0.5);
   outline: none;
   /* margin:30px 0;
   margin-right: 10px; */
@@ -76,10 +86,10 @@ canvas {
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%; 
-  background: #371bd3;
+  background: #070419;
   cursor: pointer;
 }
 
@@ -87,16 +97,18 @@ canvas {
   width: 25px;
   height: 25px;
   border-radius: 50%;
-  background: #371bd3;
+  background: #0b0a10;
   cursor: pointer;
 }
 
 .slider-label {
-  color: #fff;
-  font-size: 14px;
+  color: #000000;
+  font-size: 12px;
   margin-right: 10px;
   margin-bottom: 8px;
   align-self: flex-start;
+  font-family: "system-ui", sans-serif;
+  font-weight: bold;
 }
 
 @media screen and (max-width: 500px) {
